@@ -3,7 +3,7 @@ library(readr)
 library(dplyr)
 library(tibble)
 library(forcats)
-
+library(purrr)
 # ml packages
 library(MLmetrics)
 
@@ -16,23 +16,18 @@ train.df <- read_csv(train_data_file)
 test.df <- read_csv(test_data_file)
 sample_submission.df <- read_csv(sample_submission_file)
 
+weather_labels <- c("clear", "mist", "light rain/snow", "heavy rain/snow")
+train.df$weather <- map_chr(train.df$weather, function(x) weather_labels[x])
+
+season_labels <- c("spring", "summer", "fall", "winter")
+train.df$weather <- map_chr(train.df$weather, function(x) weather_labels[x])
+
 # categorical variables as factors conversion
 train.df %>% mutate(
-  season =
-    as_factor(
-      as.character(season),
-      levels = 1:4,
-      labels = c("spring", "summer", "fall", "winter")
-    ),
-  weather =
-    as_factor(
-      as.character(weather),
-      levels = 1:4,
-      labels = c("clear", "mist", "light rain/snow", "heavy rain/snow")
-    )
+  weather = factor(weather)
 ) -> train.df
 
-# 
+#
 save_submission <- function(x, y, filename) {
   submissions_dir <- "./submissions/"
   submission <- tibble(datetime = x, count = y)
